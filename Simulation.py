@@ -13,8 +13,7 @@ class SimulationManager:
             "solvate",
             "energy_minimization",
             "equilibration",
-            "production_md",
-            "load_trajectory"
+            "production_md"
         ]
         self.completed_steps = set()
         self.last_view = None  # Store the last view for visualization
@@ -184,23 +183,16 @@ def solvate(protein_name):
 
 def energy_minimization(protein_name):
     fake_log_message("Energy Minimization")
-    u, view = load_structure(f"{protein_name}/{protein_name}_steep1.pdb")
+    u, view = load_structure(f"{protein_name}/{protein_name}_steep1_only_prot.pdb")
     return u, view
 
 def equilibration(protein_name):
     fake_log_message("Equilibration")
-    return load_structure(f"{protein_name}/{protein_name}_steep1_NVT.pdb")
+    return load_structure(f"{protein_name}/{protein_name}_steep1_only_prot.pdb")
 
 def production_md(protein_name):
-    fake_log_message("Production MD Run")
-    u, v = load_structure(f"{protein_name}/{protein_name}_pdb2gmx.pdb")
-    zn = u.select_atoms("resname ZN")
-    view.add_surface(zn.resdiues, color="yellow")
-    return u, v
-    
-def load_trajectory(protein_name):
     """Loads an MD trajectory (.xtc) with its structure file using MDAnalysis & NGLView."""
-    fake_log_message(f"Loading Trajectory")
+    fake_log_message("Production MD Run")
     xtc_file = f"{protein_name}/{protein_name}_rep1_dt100.xtc"
     pdb_file = f"{protein_name}/{protein_name}_steep1_only_prot.pdb"
     u = mda.Universe(pdb_file, xtc_file, default_representation=False)
