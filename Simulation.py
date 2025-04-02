@@ -194,7 +194,7 @@ def equilibration(protein_name):
 def production_md(protein_name):
     fake_log_message("Production MD Run")
     u, v = load_structure(f"{protein_name}/{protein_name}_pdb2gmx.pdb")
-    zn = u.seleselect_atoms("resname ZN")
+    zn = u.select_atoms("resname ZN")
     view.add_surface(zn.resdiues, color="yellow")
     return u, v
     
