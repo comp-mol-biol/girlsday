@@ -11,7 +11,6 @@ class SimulationManager:
             "pdb_to_gro",
             "define_box",
             "solvate",
-            "energy_minimization",
             "equilibration",
             "production_md"
         ]
@@ -79,42 +78,42 @@ def fake_log_message(step_name):
     if step_name == "pdb2gmx":
         print("Converting PDB to GROMACS format...")
         loading_animation(3, "Assigning atom types")
-        print("Atom types assigned.")
-        print("Converted PDB successfully to GRO.")
+        print("\nAtom types assigned.")
+        print("\nConverted PDB successfully to GRO.")
 
     elif step_name == "Defining PBC Box":
         print("Setting periodic boundary conditions...")
         loading_animation(2, "Calculating box dimensions")
-        print("Box dimensions set successfully.")
-        print("Checking molecular placement in the box...")
+        print("\nBox dimensions set successfully.")
+        print("\nChecking molecular placement in the box...")
         loading_animation(2, "Ensuring no overlaps detected")
-        print("Setup of the PBC box was successful.")
+        print("\nSetup of the PBC box was successful.")
 
     elif step_name == "Solvating the System":
         print("Adding water molecules to system...")
         loading_animation(3, "Calculating solvation shell")
-        print("Water molecules added. System fully solvated.")
+        print("\nWater molecules added. System fully solvated.")
         time.sleep(2)
-        print("Adding Ions to neutralize charge in system...")
+        print("\nAdding Ions to neutralize charge in system...")
         loading_animation(3, "Placing counterions")
-        print(f"Added {random.randint(10, 100)} Cl atoms and {random.randint(10, 100)} Na atoms")
-        print("System neutralized.")
+        print(f"\nAdded {random.randint(10, 100)} Cl atoms and {random.randint(10, 100)} Na atoms")
+        print("\nSystem neutralized.")
 
     elif step_name == "Energy Minimization":
         print("Starting Energy minimization process...")
         loading_animation(5, "Optimizing molecular geometry")
         time.sleep(3)
-        print("Running steepest descent algorithm...")
+        print("\nRunning steepest descent algorithm...")
         loading_animation(5, "Minimizing energy")
-        print(f"Energy minimized successfully.")
+        print(f"\nEnergy minimized successfully.")
 
     elif step_name == "Equilibration":
-        print("Initializing NVT equilibration...")
+        print("\nInitializing NVT equilibration...")
         loading_animation(4, "Scaling velocities to 300K")
-        print("Temperature stabilized at 300K. System ready for NPT.")
-        print("Starting NPT equilibration...")
+        print("\nTemperature stabilized at 300K. System ready for NPT.")
+        print("\nStarting NPT equilibration...")
         loading_animation(4, "Adjusting pressure and density")
-        print("Pressure stabilized. Density converged.")
+        print("\nPressure stabilized. Density converged.")
 
     elif step_name == "Production MD Run":
         print("Starting production MD simulation...")
@@ -122,12 +121,12 @@ def fake_log_message(step_name):
             time.sleep(1)
             print(f"Simulation progress: {step} ns / 100 ns", end="\r", flush=True)
         print("\nProduction MD run completed successfully.")
-        print("Removing water molecules from system...")
+        print("\nRemoving water molecules from system...")
         loading_animation(3, "Extracting protein structure")
-        print("Solvent molecules removed. Showing protein-only structure.")
-        print("Correcting periodic boundary condition")
+        print("\nSolvent molecules removed. Showing protein-only structure.")
+        print("\nCorrecting periodic boundary condition")
         loading_animation(3, "Centering protein complex")
-        print("Periodic boundary condition sucessfully removed")
+        print("\nPeriodic boundary condition sucessfully removed")
     
     else:
         print("Step completed successfully.")
@@ -171,24 +170,23 @@ def solvate(protein_name):
     zn = u_sol.select_atoms("resname ZN")
     sol = u_sol.select_atoms("resname SOL")
     view_sol = nv.show_mdanalysis(u_sol, default_representation=False)
-    
     # Clear previous representations
     view_sol.clear_representations()
-    
     view_sol.add_cartoon("protein")
     view_sol.add_point(sol.residues, color="cyan")
     view_sol.add_surface(zn.residues, color="yellow")  # Highlights Zn atoms
     view_sol.center()
     return u_sol, view_sol
 
-def energy_minimization(protein_name):
-    fake_log_message("Energy Minimization")
-    u, view = load_structure(f"{protein_name}/{protein_name}_steep1_only_prot.pdb")
-    return u, view
 
 def equilibration(protein_name):
+    fake_log_message("Energy Minimization")
     fake_log_message("Equilibration")
-    return load_structure(f"{protein_name}/{protein_name}_steep1_only_prot.pdb")
+    u, v = load_structure(f"{protein_name}/{protein_name}_steep1_only_prot.pdb")
+    zn = u.select_atoms("resname ZN")
+    v.add_surface(zn.residues, color="yellow")
+    v.center()
+    return u, v
 
 def production_md(protein_name):
     """Loads an MD trajectory (.xtc) with its structure file using MDAnalysis & NGLView."""
@@ -199,7 +197,7 @@ def production_md(protein_name):
     zn = u.select_atoms("resname ZN")
     #prot = u.select_atoms("protein")
     view = nv.show_mdanalysis(u)
-    view.add_cartoon("protein")
+    view.add_cartoon("protein", color="blue")
     view.add_surface(zn.residues, color="yellow")
     view.center()
     return u, view
