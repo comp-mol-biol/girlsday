@@ -3,6 +3,11 @@ import random
 import time
 import MDAnalysis as mda
 import numpy as np
+import py3Dmol
+from MDAnalysis.coordinates.PDB import PDBWriter
+import tempfile
+import os
+
 
 class SimulationManager:
     def __init__(self, protein_name):
@@ -189,15 +194,55 @@ def equilibration(protein_name):
     return u, v
 
 def production_md(protein_name):
-    """Loads an MD trajectory (.xtc) with its structure file using MDAnalysis & NGLView."""
+    """Loads an MD trajectory with optimized memory usage and stable playback."""
     fake_log_message("Production MD Run")
+
+    
     xtc_file = f"{protein_name}/{protein_name}_rep1_dt100.xtc"
     pdb_file = f"{protein_name}/{protein_name}_steep1_only_prot.pdb"
-    u = mda.Universe(pdb_file, xtc_file, default_representation=False)
-    zn = u.select_atoms("resname ZN")
-    #prot = u.select_atoms("protein")
-    view = nv.show_mdanalysis(u)
-    view.add_cartoon("protein", color="blue")
-    view.add_surface(zn.residues, color="yellow")
-    view.center()
+
+    u = mda.Universe(pdb_file, xtc_file)
+
+    view = py3Dmol.view(width=800, height=600)
+
+    frames = []
+
+    # temporary file reused each frame
+    with tempfile.NamedTemporaryFile(suffix=".pdb", delete=False) as tmp:
+        tmp_name = tmp.name
+
+    for ts in u.trajectory[::10]:
+        with PDBWriter(tmp_name) as W:
+            W.write(u.atoms)
+
+        with open(tmp_name) as f:
+            frames.append(f.read())
+
+    os.remove(tmp_name)
+
+    #  REAL trajectory
+    view.addModelsAsFrames("".join(frames), "pdb")
+
+    view.setStyle({}, {})  # clear default style
+
+    # Protein cartoon (blue)
+    view.setStyle(
+        {"cartoon": {"color": "blue"}}
+    )
+    # Zinc residues (yellow surface)
+    view.addStyle(
+        {"resn": "ZN"},
+        {
+            "sphere": {"color": "yellow", "scale": 1.5},
+            "surface": {"opacity": 1.0, "color": "yellow"}
+        }
+    )
+
+    view.animate({
+            "loop": "forward",
+            "interval": 50
+        })
+
+    view.zoomTo()
+
     return u, view
