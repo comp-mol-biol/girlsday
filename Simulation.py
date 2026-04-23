@@ -171,17 +171,17 @@ def define_box(protein_name):
 
 def solvate(protein_name):
     fake_log_message("Solvating the System")
-    u_sol = mda.Universe(f"{protein_name}/{protein_name}_sol.pdb")
-    zn = u_sol.select_atoms("resname ZN")
-    sol = u_sol.select_atoms("resname SOL")
-    view_sol = nv.show_mdanalysis(u_sol, default_representation=False)
+    u = mda.Universe(f"{protein_name}/{protein_name}_sol.pdb")
+    zn = u.select_atoms("resname ZN")
+    sol = u.select_atoms("resname SOL")
+    view = nv.show_mdanalysis(u, default_representation=False)
     # Clear previous representations
-    view_sol.clear_representations()
-    view_sol.add_cartoon("protein")
-    view_sol.add_point(sol.residues, color="cyan")
-    view_sol.add_surface(zn.residues, color="yellow")  # Highlights Zn atoms
-    view_sol.center()
-    return u_sol, view_sol
+    view.clear_representations()
+    view.add_cartoon("protein")
+    view.add_point(sol.residues, color="cyan")
+    view.add_surface(zn.residues, color="yellow")  # Highlights Zn atoms
+    view.center()
+    return u, view
 
 
 def equilibration(protein_name):
